@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Envs
+.venv/
+venv/
+env/
+.conda/
+
+# Data / training artifacts (do not commit)
+data/
+datasets/
+checkpoints/
+runs/
+wandb/
+logs/
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.onnx
