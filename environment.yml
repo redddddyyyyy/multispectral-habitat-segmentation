@@ -2,14 +2,16 @@ name: habitat-seg
 channels:
   - pytorch
   - conda-forge
+  - defaults
 dependencies:
   - python=3.10
-  - pytorch
-  - torchvision
-  - torchaudio
-  - cpuonly
-  - numpy
-  - matplotlib
-  - rasterio
-  - tqdm
+  - pytorch>=2.0
+  - torchvision>=0.15
+  - pytorch-cuda=11.8  # Change to cpuonly if no GPU
+  - numpy>=1.21
+  - matplotlib>=3.5
+  - rasterio>=1.3
+  - tqdm>=4.64
   - pip
+  - pip:
+    - tensorboard>=2.12
