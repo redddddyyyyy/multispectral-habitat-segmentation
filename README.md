@@ -8,12 +8,44 @@ Semantic segmentation of coastal habitats from **8-band multispectral GeoTIFF im
 
 ---
 
-## Sample Results
+## Results
 
-<!-- Add your sample predictions image here after running visualize.py -->
-<!-- ![Sample Predictions](assets/sample_predictions.png) -->
+### Model Performance
 
-*Run `python visualize.py` after training to generate sample predictions.*
+| Metric | Value |
+|--------|-------|
+| **Training Accuracy** | ~85% |
+| **Validation Accuracy** | ~76% |
+| **Training Loss** | 2.0 → 0.6 (50 epochs) |
+
+### Segmentation Output
+
+<p align="center">
+  <img src="assets/prediction_result.png" alt="Prediction with All Classes" width="500"/>
+</p>
+
+*Model prediction showing all 7 habitat classes with legend*
+
+### Full Coastline Habitat Map
+
+<p align="center">
+  <img src="assets/habitat_mosaic.png" alt="Habitat Map Mosaic" width="800"/>
+</p>
+
+*Improved labeled habitat map — full coastline segmentation mosaic*
+
+### Training Curves
+
+<table>
+  <tr>
+    <td><img src="assets/training_accuracy.png" alt="Training Accuracy" width="400"/></td>
+    <td><img src="assets/training_loss.png" alt="Training Loss" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Training Accuracy</em></td>
+    <td align="center"><em>Training Loss</em></td>
+  </tr>
+</table>
 
 ---
 
@@ -22,9 +54,9 @@ Semantic segmentation of coastal habitats from **8-band multispectral GeoTIFF im
 This project implements a deep learning pipeline for pixel-wise classification of coastal satellite imagery, addressing challenges like:
 
 - **Multispectral input** — 8 channels instead of standard RGB
-- **Class imbalance** — Weighted cross-entropy loss
+- **Class imbalance** — Median-frequency balancing to boost rare classes
 - **Limited data** — Data augmentation (flip, rotate, scale, color jitter)
-- **Noisy boundaries** — Morphological post-processing
+- **Noisy predictions** — Median filtering post-processing
 
 ---
 
@@ -62,6 +94,20 @@ Output (7-class segmentation mask, 256×256)
 ```
 
 **Key Modification:** The first convolutional layer is expanded from 3→8 input channels. RGB weights are preserved, and additional channels are initialized with the mean of RGB filters.
+
+---
+
+## Habitat Classes
+
+| ID | Class | Color | Description |
+|----|-------|-------|-------------|
+| 0 | Background | Dark Gray | Non-habitat areas |
+| 1 | Seagrass | Dark Green | Submerged aquatic vegetation |
+| 2 | Coral | Brown-Red | Coral reef structures |
+| 3 | Macroalgae | Olive Green | Macro algae coverage |
+| 4 | Sand | Tan | Sandy substrate |
+| 5 | Land | Orange-Brown | Terrestrial areas |
+| 6 | Ocean | Light Blue | Deep water regions |
 
 ---
 
@@ -138,7 +184,7 @@ python infer.py \
 
 | Feature | Description |
 |---------|-------------|
-| **Class Weighting** | Inverse frequency weighting for imbalanced classes |
+| **Class Weighting** | Median-frequency balancing for imbalanced classes |
 | **Data Augmentation** | Random flip, rotation, scaling, brightness/contrast |
 | **LR Scheduler** | Cosine annealing with warm restarts |
 | **Early Stopping** | Patience-based stopping on validation mIoU |
@@ -155,21 +201,7 @@ python infer.py \
 | **Pixel Accuracy** | Overall pixel classification accuracy |
 | **Per-class IoU** | IoU for each habitat class |
 | **Macro F1** | Macro-averaged F1 score |
-| **Confusion Matrix** | Full NxN confusion matrix |
-
----
-
-## Habitat Classes
-
-| ID | Class | Description |
-|----|-------|-------------|
-| 0 | Background | Non-habitat areas |
-| 1 | Seagrass | Submerged aquatic vegetation |
-| 2 | Coral | Coral reef structures |
-| 3 | Sand | Sandy substrate |
-| 4 | Rock | Rocky substrate |
-| 5 | Algae | Algal coverage |
-| 6 | Deep Water | Deep water regions |
+| **Confusion Matrix** | Full 7×7 confusion matrix |
 
 ---
 
@@ -187,7 +219,7 @@ python infer.py \
 ├── evaluate.py             # Evaluation script
 ├── visualize.py            # Visualization script
 ├── infer.py                # Inference script
-├── assets/                 # Sample predictions (generated)
+├── assets/                 # Result visualizations
 ├── notebooks/              # Exploration notebooks
 ├── report/                 # Project report (PDF)
 ├── environment.yml         # Conda environment
@@ -213,12 +245,12 @@ new_conv.weight[:, 3:] = mean_w.repeat(1, in_channels - 3, 1, 1)
 
 ### Class Imbalance
 
-Coastal imagery often has imbalanced class distributions. We use inverse-frequency class weights:
+Coastal imagery has highly skewed class distributions. Simple inverse-frequency weights under-penalize rare classes like Ocean. We use **median-frequency balancing**:
 
 ```python
-class_counts = compute_class_frequencies(dataset)
-weights = 1.0 / (class_counts + 1e-6)
-weights = weights / weights.sum() * num_classes
+freqs = counts / counts.sum()
+median_freq = torch.median(freqs[freqs > 0])
+weights = median_freq / (freqs + 1e-8)
 criterion = nn.CrossEntropyLoss(weight=weights)
 ```
 
@@ -230,11 +262,20 @@ Training augmentations applied jointly to image and mask:
 - Random scale (0.8× - 1.2×)
 - Brightness/contrast jitter (±20%)
 
+### Post-Processing
+
+Median filtering applied to predictions to reduce salt-and-pepper noise:
+
+```python
+from scipy.ndimage import median_filter
+smoothed_pred = median_filter(prediction, size=3)
+```
+
 ---
 
 ## Documentation
 
-- [`report/PROJECT-3_REPORT.pdf`](report/PROJECT-3_REPORT.pdf) — Full project report with methodology and results
+- [`report/PROJECT-3_REPORT.pdf`](report/PROJECT-3_REPORT.pdf) — Full technical report with methodology and results
 
 ---
 
