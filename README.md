@@ -18,34 +18,13 @@ Semantic segmentation of coastal habitats from **8-band multispectral GeoTIFF im
 | **Validation Accuracy** | ~76% |
 | **Training Loss** | 2.0 → 0.6 (50 epochs) |
 
-### Segmentation Output
-
-<p align="center">
-  <img src="assets/prediction_result.png" alt="Prediction with All Classes" width="500"/>
-</p>
-
-*Model prediction showing all 7 habitat classes with legend*
-
 ### Full Coastline Habitat Map
 
 <p align="center">
-  <img src="assets/habitat_mosaic.png" alt="Habitat Map Mosaic" width="800"/>
+  <img src="assets/habitat_mosaic.png" alt="Habitat Map Mosaic"/>
 </p>
 
-*Improved labeled habitat map — full coastline segmentation mosaic*
-
-### Training Curves
-
-<table>
-  <tr>
-    <td><img src="assets/training_accuracy.png" alt="Training Accuracy" width="400"/></td>
-    <td><img src="assets/training_loss.png" alt="Training Loss" width="400"/></td>
-  </tr>
-  <tr>
-    <td align="center"><em>Training Accuracy</em></td>
-    <td align="center"><em>Training Loss</em></td>
-  </tr>
-</table>
+*Improved labeled habitat map — full coastline segmentation showing all 7 habitat classes across multiple tiles*
 
 ---
 
